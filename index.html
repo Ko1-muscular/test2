@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mario Game</title>
+<style>
+body{
+    margin:0;
+    background:#87CEEB;
+    overflow:hidden;
+    font-family:Arial,sans-serif;
+}
+
+#game{
+    position:relative;
+    width:1000px;
+    height:550px;
+    margin:20px auto;
+    border:4px solid black;
+    background:linear-gradient(#87CEEB 75%, #66bb55 75%);
+    overflow:hidden;
+}
+
+#mario{
+    position:absolute;
+    width:40px;
+    height:50px;
+    background:red;
+    border-radius:8px;
+}
+
+.platform{
+    position:absolute;
+    background:#8B4513;
+}
+
+.coin{
+    position:absolute;
+    width:20px;
+    height:20px;
+    background:gold;
+    border-radius:50%;
+    border:2px solid orange;
+}
+
+.enemy{
+    position:absolute;
+    width:40px;
+    height:40px;
+    background:purple;
+}
+
+#flagPole{
+    position:absolute;
+    width:8px;
+    height:180px;
+    background:white;
+    bottom:60px;
+    left:930px;
+}
+
+#flag{
+    position:absolute;
+    width:50px;
+    height:35px;
+    background:pink;
+    left:8px;
+    top:10px;
+    clip-path:polygon(0 0,100% 20%,100% 80%,0 100%);
+}
+
+#ground{
+    position:absolute;
+    bottom:0;
+    width:100%;
+    height:60px;
+    background:#4CAF50;
+}
+
+#ui{
+    position:absolute;
+    top:10px;
+    left:10px;
+    font-size:24px;
+    font-weight:bold;
+}
+
+#message{
+    position:absolute;
+    width:100%;
+    top:200px;
+    text-align:center;
+    font-size:50px;
+    color:white;
+    text-shadow:3px 3px 5px black;
+    display:none;
+}
+</style>
+</head>
+<body>
+
+<div id="game">
+
+<div id="ui">Score: <span id="score">0</span></div>
+
+<div id="message"></div>
+
+<div id="mario"></div>
+
+<div class="platform" style="left:150px; top:420px; width:120px; height:20px;"></div>
+<div class="platform" style="left:350px; top:350px; width:120px; height:20px;"></div>
+<div class="platform" style="left:550px; top:280px; width:120px; height:20px;"></div>
+<div class="platform" style="left:750px; top:350px; width:120px; height:20px;"></div>
+
+<div class="coin" style="left:190px; top:380px;"></div>
+<div class="coin" style="left:390px; top:310px;"></div>
+<div class="coin" style="left:590px; top:240px;"></div>
+<div class="coin" style="left:790px; top:310px;"></div>
+
+<div class="enemy" style="left:280px; top:470px;"></div>
+<div class="enemy" style="left:650px; top:470px;"></div>
+
+<div id="flagPole">
+    <div id="flag"></div>
+</div>
+
+<div id="ground"></div>
+
+</div>
+
+<script>
+const mario=document.getElementById("mario");
+const game=document.getElementById("game");
+const scoreText=document.getElementById("score");
+const message=document.getElementById("message");
+
+let x=50;
+let y=450;
+let vx=0;
+let vy=0;
+
+let score=0;
+let gameOver=false;
+let won=false;
+
+const gravity=0.6;
+const speed=5;
+const jumpPower=-13;
+
+const keys={};
+
+document.addEventListener("keydown",(e)=>{
+    keys[e.key.toLowerCase()]=true;
+
+    if(e.key==="Enter" && (gameOver || won)){
+        location.reload();
+    }
+});
+
+document.addEventListener("keyup",(e)=>{
+    keys[e.key.toLowerCase()]=false;
+});
+
+const platforms=[...document.querySelectorAll(".platform")];
+const coins=[...document.querySelectorAll(".coin")];
+const enemies=[...document.querySelectorAll(".enemy")];
+
+function rectsOverlap(a,b){
+    return(
+        a.left<b.right &&
+        a.right>b.left &&
+        a.top<b.bottom &&
+        a.bottom>b.top
+    );
+}
+
+function update(){
+
+    if(gameOver || won) return;
+
+    vx=0;
+
+    if(keys["a"]) vx=-speed;
+    if(keys["d"]) vx=speed;
+
+    x+=vx;
+
+    vy+=gravity;
+    y+=vy;
+
+    let onGround=false;
+
+    if(y>450){
+        y=450;
+        vy=0;
+        onGround=true;
+    }
+
+    mario.style.left=x+"px";
+    mario.style.top=y+"px";
+
+    const marioRect=mario.getBoundingClientRect();
+
+    platforms.forEach(platform=>{
+
+        const pRect=platform.getBoundingClientRect();
+
+        if(rectsOverlap(marioRect,pRect)){
+
+            if(vy>0){
+                y=platform.offsetTop-50;
+                vy=0;
+                onGround=true;
+            }
+        }
+    });
+
+    if(keys["w"] && onGround){
+        vy=jumpPower;
+    }
+
+    mario.style.left=x+"px";
+    mario.style.top=y+"px";
+
+    coins.forEach(coin=>{
+
+        if(coin.style.display==="none") return;
+
+        if(rectsOverlap(
+            mario.getBoundingClientRect(),
+            coin.getBoundingClientRect()
+        )){
+            coin.style.display="none";
+            score++;
+            scoreText.textContent=score;
+        }
+    });
+
+    enemies.forEach(enemy=>{
+
+        if(enemy.style.display==="none") return;
+
+        const eRect=enemy.getBoundingClientRect();
+        const mRect=mario.getBoundingClientRect();
+
+        if(rectsOverlap(mRect,eRect)){
+
+            if(vy>0 && mRect.bottom<eRect.top+20){
+                enemy.style.display="none";
+                vy=-10;
+            }
+            else{
+                gameOver=true;
+                message.style.display="block";
+                message.innerHTML=
+                "GAME OVER<br><span style='font-size:25px'>Press ENTER</span>";
+            }
+        }
+    });
+
+    const flag=document.getElementById("flagPole");
+
+    if(rectsOverlap(
+        mario.getBoundingClientRect(),
+        flag.getBoundingClientRect()
+    )){
+        won=true;
+        message.style.display="block";
+        message.innerHTML=
+        "YOU WIN!<br><span style='font-size:25px'>Press ENTER</span>";
+    }
+
+    requestAnimationFrame(update);
+}
+
+update();
+</script>
+
+</body>
+</html>
