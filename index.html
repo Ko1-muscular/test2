@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mario Game</title>
+<title>Hard Mario Game</title>
+
 <style>
 body{
     margin:0;
@@ -14,11 +15,11 @@ body{
 
 #game{
     position:relative;
-    width:1000px;
-    height:550px;
+    width:1200px;
+    height:600px;
     margin:20px auto;
-    border:4px solid black;
-    background:linear-gradient(#87CEEB 75%, #66bb55 75%);
+    background:linear-gradient(#87CEEB 75%, #6dbb4f 75%);
+    border:5px solid black;
     overflow:hidden;
 }
 
@@ -28,6 +29,7 @@ body{
     height:50px;
     background:red;
     border-radius:8px;
+    z-index:10;
 }
 
 .platform{
@@ -39,8 +41,8 @@ body{
     position:absolute;
     width:20px;
     height:20px;
-    background:gold;
     border-radius:50%;
+    background:gold;
     border:2px solid orange;
 }
 
@@ -51,31 +53,38 @@ body{
     background:purple;
 }
 
-#flagPole{
-    position:absolute;
-    width:8px;
-    height:180px;
-    background:white;
-    bottom:60px;
-    left:930px;
-}
-
-#flag{
-    position:absolute;
-    width:50px;
-    height:35px;
-    background:pink;
-    left:8px;
-    top:10px;
-    clip-path:polygon(0 0,100% 20%,100% 80%,0 100%);
-}
-
 #ground{
     position:absolute;
     bottom:0;
     width:100%;
     height:60px;
     background:#4CAF50;
+}
+
+.pit{
+    position:absolute;
+    bottom:0;
+    height:60px;
+    background:black;
+}
+
+#flagPole{
+    position:absolute;
+    left:1130px;
+    bottom:60px;
+    width:8px;
+    height:220px;
+    background:white;
+}
+
+#flag{
+    position:absolute;
+    width:60px;
+    height:40px;
+    background:pink;
+    left:8px;
+    top:10px;
+    clip-path:polygon(0 0,100% 20%,100% 80%,0 100%);
 }
 
 #ui{
@@ -89,54 +98,70 @@ body{
 #message{
     position:absolute;
     width:100%;
-    top:200px;
+    top:220px;
     text-align:center;
-    font-size:50px;
     color:white;
+    font-size:60px;
     text-shadow:3px 3px 5px black;
     display:none;
 }
 </style>
 </head>
+
 <body>
 
 <div id="game">
 
-<div id="ui">Score: <span id="score">0</span></div>
+<div id="ui">
+Score: <span id="score">0</span>
+&nbsp;&nbsp;&nbsp;
+Time: <span id="timer">120</span>
+</div>
 
 <div id="message"></div>
 
 <div id="mario"></div>
 
-<div class="platform" style="left:150px; top:420px; width:120px; height:20px;"></div>
-<div class="platform" style="left:350px; top:350px; width:120px; height:20px;"></div>
-<div class="platform" style="left:550px; top:280px; width:120px; height:20px;"></div>
-<div class="platform" style="left:750px; top:350px; width:120px; height:20px;"></div>
+<div id="ground"></div>
 
-<div class="coin" style="left:190px; top:380px;"></div>
-<div class="coin" style="left:390px; top:310px;"></div>
-<div class="coin" style="left:590px; top:240px;"></div>
-<div class="coin" style="left:790px; top:310px;"></div>
+<div class="pit" style="left:250px;width:120px;"></div>
+<div class="pit" style="left:700px;width:120px;"></div>
 
-<div class="enemy" style="left:280px; top:470px;"></div>
-<div class="enemy" style="left:650px; top:470px;"></div>
+<div class="platform" style="left:150px;top:430px;width:120px;height:20px;"></div>
+<div class="platform" style="left:400px;top:350px;width:120px;height:20px;"></div>
+<div class="platform" style="left:600px;top:280px;width:120px;height:20px;"></div>
+<div class="platform" style="left:850px;top:340px;width:120px;height:20px;"></div>
+<div class="platform" style="left:980px;top:250px;width:120px;height:20px;"></div>
+
+<div class="coin" style="left:180px;top:390px;"></div>
+<div class="coin" style="left:220px;top:390px;"></div>
+<div class="coin" style="left:430px;top:310px;"></div>
+<div class="coin" style="left:470px;top:310px;"></div>
+<div class="coin" style="left:630px;top:240px;"></div>
+<div class="coin" style="left:670px;top:240px;"></div>
+<div class="coin" style="left:880px;top:300px;"></div>
+<div class="coin" style="left:1020px;top:210px;"></div>
+
+<div class="enemy" style="left:300px;top:500px;"></div>
+<div class="enemy" style="left:500px;top:500px;"></div>
+<div class="enemy" style="left:900px;top:500px;"></div>
+<div class="enemy" style="left:1040px;top:210px;"></div>
 
 <div id="flagPole">
-    <div id="flag"></div>
+<div id="flag"></div>
 </div>
-
-<div id="ground"></div>
 
 </div>
 
 <script>
+
 const mario=document.getElementById("mario");
-const game=document.getElementById("game");
 const scoreText=document.getElementById("score");
+const timerText=document.getElementById("timer");
 const message=document.getElementById("message");
 
-let x=50;
-let y=450;
+let x=40;
+let y=500;
 let vx=0;
 let vy=0;
 
@@ -150,23 +175,72 @@ const jumpPower=-13;
 
 const keys={};
 
-document.addEventListener("keydown",(e)=>{
+const enemies=[...document.querySelectorAll(".enemy")];
+const platforms=[...document.querySelectorAll(".platform")];
+const pits=[...document.querySelectorAll(".pit")];
+const coins=[...document.querySelectorAll(".coin")];
+
+let enemyDirs=enemies.map(()=>2);
+
+let audioStarted=false;
+const audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+
+function beep(freq,duration){
+
+    const osc=audioCtx.createOscillator();
+    const gain=audioCtx.createGain();
+
+    osc.frequency.value=freq;
+    osc.type="square";
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    gain.gain.value=0.03;
+
+    osc.start();
+
+    setTimeout(()=>{
+        osc.stop();
+    },duration);
+}
+
+function startBGM(){
+
+    if(audioStarted) return;
+    audioStarted=true;
+
+    const melody=[523,659,784,659];
+
+    let i=0;
+
+    setInterval(()=>{
+
+        if(gameOver||won) return;
+
+        beep(melody[i%melody.length],150);
+        i++;
+
+    },300);
+}
+
+document.addEventListener("keydown",e=>{
+
+    startBGM();
+
     keys[e.key.toLowerCase()]=true;
 
-    if(e.key==="Enter" && (gameOver || won)){
+    if(e.key==="Enter" && (gameOver||won)){
         location.reload();
     }
 });
 
-document.addEventListener("keyup",(e)=>{
+document.addEventListener("keyup",e=>{
     keys[e.key.toLowerCase()]=false;
 });
 
-const platforms=[...document.querySelectorAll(".platform")];
-const coins=[...document.querySelectorAll(".coin")];
-const enemies=[...document.querySelectorAll(".enemy")];
+function overlap(a,b){
 
-function rectsOverlap(a,b){
     return(
         a.left<b.right &&
         a.right>b.left &&
@@ -175,9 +249,45 @@ function rectsOverlap(a,b){
     );
 }
 
+function winMelody(){
+
+    [523,659,784,1046].forEach((n,i)=>{
+        setTimeout(()=>beep(n,250),i*250);
+    });
+}
+
+function loseMelody(){
+
+    [600,500,400,250].forEach((n,i)=>{
+        setTimeout(()=>beep(n,300),i*250);
+    });
+}
+
+let timeLeft=120;
+
+setInterval(()=>{
+
+    if(gameOver||won) return;
+
+    timeLeft--;
+
+    timerText.textContent=timeLeft;
+
+    if(timeLeft<=0){
+
+        gameOver=true;
+        loseMelody();
+
+        message.style.display="block";
+        message.innerHTML=
+        "TIME UP!<br><span style='font-size:24px'>Press ENTER</span>";
+    }
+
+},1000);
+
 function update(){
 
-    if(gameOver || won) return;
+    if(gameOver||won) return;
 
     vx=0;
 
@@ -191,8 +301,34 @@ function update(){
 
     let onGround=false;
 
-    if(y>450){
-        y=450;
+    if(y>=500){
+
+        let overPit=false;
+
+        pits.forEach(pit=>{
+
+            const pitLeft=pit.offsetLeft;
+            const pitRight=pitLeft+pit.offsetWidth;
+
+            if(x+20>pitLeft && x+20<pitRight){
+                overPit=true;
+            }
+
+        });
+
+        if(overPit){
+
+            gameOver=true;
+            loseMelody();
+
+            message.style.display="block";
+            message.innerHTML=
+            "FELL IN PIT!<br><span style='font-size:24px'>Press ENTER</span>";
+
+            return;
+        }
+
+        y=500;
         vy=0;
         onGround=true;
     }
@@ -206,14 +342,13 @@ function update(){
 
         const pRect=platform.getBoundingClientRect();
 
-        if(rectsOverlap(marioRect,pRect)){
+        if(overlap(marioRect,pRect) && vy>0){
 
-            if(vy>0){
-                y=platform.offsetTop-50;
-                vy=0;
-                onGround=true;
-            }
+            y=platform.offsetTop-50;
+            vy=0;
+            onGround=true;
         }
+
     });
 
     if(keys["w"] && onGround){
@@ -227,54 +362,80 @@ function update(){
 
         if(coin.style.display==="none") return;
 
-        if(rectsOverlap(
+        if(overlap(
             mario.getBoundingClientRect(),
             coin.getBoundingClientRect()
         )){
+
             coin.style.display="none";
-            score++;
+            score+=10;
             scoreText.textContent=score;
         }
+
     });
 
-    enemies.forEach(enemy=>{
+    enemies.forEach((enemy,index)=>{
 
-        if(enemy.style.display==="none") return;
+        let pos=parseFloat(enemy.style.left);
 
-        const eRect=enemy.getBoundingClientRect();
-        const mRect=mario.getBoundingClientRect();
+        pos+=enemyDirs[index];
 
-        if(rectsOverlap(mRect,eRect)){
+        if(pos<50 || pos>1100){
+            enemyDirs[index]*=-1;
+        }
 
-            if(vy>0 && mRect.bottom<eRect.top+20){
+        enemy.style.left=pos+"px";
+
+        if(overlap(
+            mario.getBoundingClientRect(),
+            enemy.getBoundingClientRect()
+        )){
+
+            const m=mario.getBoundingClientRect();
+            const e=enemy.getBoundingClientRect();
+
+            if(vy>0 && m.bottom<e.top+20){
+
                 enemy.style.display="none";
                 vy=-10;
-            }
-            else{
+                score+=20;
+                scoreText.textContent=score;
+
+            }else{
+
                 gameOver=true;
+                loseMelody();
+
                 message.style.display="block";
                 message.innerHTML=
-                "GAME OVER<br><span style='font-size:25px'>Press ENTER</span>";
+                "GAME OVER<br><span style='font-size:24px'>Press ENTER</span>";
             }
         }
+
     });
 
-    const flag=document.getElementById("flagPole");
+    const pole=document.getElementById("flagPole");
 
-    if(rectsOverlap(
+    if(overlap(
         mario.getBoundingClientRect(),
-        flag.getBoundingClientRect()
+        pole.getBoundingClientRect()
     )){
+
         won=true;
+
+        winMelody();
+
         message.style.display="block";
         message.innerHTML=
-        "YOU WIN!<br><span style='font-size:25px'>Press ENTER</span>";
+        "YOU WIN!<br>Score: "+score+
+        "<br><span style='font-size:24px'>Press ENTER</span>";
     }
 
     requestAnimationFrame(update);
 }
 
 update();
+
 </script>
 
 </body>
