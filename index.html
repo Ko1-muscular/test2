@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hard Mario Game</title>
+<title>Mario Game - Moving Platforms</title>
 
 <style>
 body{
@@ -35,6 +35,12 @@ body{
 .platform{
     position:absolute;
     background:#8B4513;
+}
+
+.movingPlatform{
+    position:absolute;
+    background:#A0522D;
+    border:3px solid #5C3317;
 }
 
 .coin{
@@ -124,29 +130,40 @@ Time: <span id="timer">120</span>
 
 <div id="ground"></div>
 
+<!-- Pits -->
 <div class="pit" style="left:250px;width:120px;"></div>
 <div class="pit" style="left:700px;width:120px;"></div>
 
+<!-- Fixed Platforms -->
 <div class="platform" style="left:150px;top:430px;width:120px;height:20px;"></div>
-<div class="platform" style="left:400px;top:350px;width:120px;height:20px;"></div>
 <div class="platform" style="left:600px;top:280px;width:120px;height:20px;"></div>
-<div class="platform" style="left:850px;top:340px;width:120px;height:20px;"></div>
 <div class="platform" style="left:980px;top:250px;width:120px;height:20px;"></div>
 
+<!-- Moving Platforms -->
+<div id="mp1" class="movingPlatform"
+     style="left:350px;top:360px;width:140px;height:20px;"></div>
+
+<div id="mp2" class="movingPlatform"
+     style="left:820px;top:360px;width:140px;height:20px;"></div>
+
+<!-- Coins -->
 <div class="coin" style="left:180px;top:390px;"></div>
 <div class="coin" style="left:220px;top:390px;"></div>
-<div class="coin" style="left:430px;top:310px;"></div>
-<div class="coin" style="left:470px;top:310px;"></div>
+<div class="coin" style="left:430px;top:320px;"></div>
+<div class="coin" style="left:470px;top:320px;"></div>
 <div class="coin" style="left:630px;top:240px;"></div>
 <div class="coin" style="left:670px;top:240px;"></div>
-<div class="coin" style="left:880px;top:300px;"></div>
+<div class="coin" style="left:860px;top:320px;"></div>
+<div class="coin" style="left:900px;top:320px;"></div>
 <div class="coin" style="left:1020px;top:210px;"></div>
 
+<!-- Enemies -->
 <div class="enemy" style="left:300px;top:500px;"></div>
 <div class="enemy" style="left:500px;top:500px;"></div>
 <div class="enemy" style="left:900px;top:500px;"></div>
 <div class="enemy" style="left:1040px;top:210px;"></div>
 
+<!-- Goal -->
 <div id="flagPole">
 <div id="flag"></div>
 </div>
@@ -176,17 +193,23 @@ const jumpPower=-13;
 const keys={};
 
 const enemies=[...document.querySelectorAll(".enemy")];
-const platforms=[...document.querySelectorAll(".platform")];
+const fixedPlatforms=[...document.querySelectorAll(".platform")];
+const movingPlatforms=[...document.querySelectorAll(".movingPlatform")];
 const pits=[...document.querySelectorAll(".pit")];
 const coins=[...document.querySelectorAll(".coin")];
 
 let enemyDirs=enemies.map(()=>2);
 
+const mp1=document.getElementById("mp1");
+const mp2=document.getElementById("mp2");
+
+let mp1Dir=2;
+let mp2Dir=-2;
+
 let audioStarted=false;
 const audioCtx=new (window.AudioContext||window.webkitAudioContext)();
 
 function beep(freq,duration){
-
     const osc=audioCtx.createOscillator();
     const gain=audioCtx.createGain();
 
@@ -200,9 +223,7 @@ function beep(freq,duration){
 
     osc.start();
 
-    setTimeout(()=>{
-        osc.stop();
-    },duration);
+    setTimeout(()=>osc.stop(),duration);
 }
 
 function startBGM(){
@@ -211,7 +232,6 @@ function startBGM(){
     audioStarted=true;
 
     const melody=[523,659,784,659];
-
     let i=0;
 
     setInterval(()=>{
@@ -240,8 +260,7 @@ document.addEventListener("keyup",e=>{
 });
 
 function overlap(a,b){
-
-    return(
+    return (
         a.left<b.right &&
         a.right>b.left &&
         a.top<b.bottom &&
@@ -250,14 +269,12 @@ function overlap(a,b){
 }
 
 function winMelody(){
-
     [523,659,784,1046].forEach((n,i)=>{
         setTimeout(()=>beep(n,250),i*250);
     });
 }
 
 function loseMelody(){
-
     [600,500,400,250].forEach((n,i)=>{
         setTimeout(()=>beep(n,300),i*250);
     });
@@ -270,7 +287,6 @@ setInterval(()=>{
     if(gameOver||won) return;
 
     timeLeft--;
-
     timerText.textContent=timeLeft;
 
     if(timeLeft<=0){
@@ -285,9 +301,26 @@ setInterval(()=>{
 
 },1000);
 
+function updateMovingPlatforms(){
+
+    let old1=parseFloat(mp1.style.left);
+    let old2=parseFloat(mp2.style.left);
+
+    old1 += mp1Dir;
+    old2 += mp2Dir;
+
+    if(old1<280 || old1>520) mp1Dir*=-1;
+    if(old2<720 || old2>980) mp2Dir*=-1;
+
+    mp1.style.left=old1+"px";
+    mp2.style.left=old2+"px";
+}
+
 function update(){
 
     if(gameOver||won) return;
+
+    updateMovingPlatforms();
 
     vx=0;
 
@@ -307,10 +340,10 @@ function update(){
 
         pits.forEach(pit=>{
 
-            const pitLeft=pit.offsetLeft;
-            const pitRight=pitLeft+pit.offsetWidth;
+            const left=pit.offsetLeft;
+            const right=left+pit.offsetWidth;
 
-            if(x+20>pitLeft && x+20<pitRight){
+            if(x+20>left && x+20<right){
                 overPit=true;
             }
 
@@ -338,15 +371,31 @@ function update(){
 
     const marioRect=mario.getBoundingClientRect();
 
-    platforms.forEach(platform=>{
+    [...fixedPlatforms,...movingPlatforms].forEach(platform=>{
 
         const pRect=platform.getBoundingClientRect();
 
         if(overlap(marioRect,pRect) && vy>0){
 
-            y=platform.offsetTop-50;
-            vy=0;
-            onGround=true;
+            const previousBottom=(y-vy)+50;
+
+            if(previousBottom <= platform.offsetTop+10){
+
+                y=platform.offsetTop-50;
+                vy=0;
+                onGround=true;
+
+                if(platform.classList.contains("movingPlatform")){
+
+                    if(platform.id==="mp1"){
+                        x+=mp1Dir;
+                    }
+
+                    if(platform.id==="mp2"){
+                        x+=mp2Dir;
+                    }
+                }
+            }
         }
 
     });
@@ -366,15 +415,15 @@ function update(){
             mario.getBoundingClientRect(),
             coin.getBoundingClientRect()
         )){
-
             coin.style.display="none";
             score+=10;
             scoreText.textContent=score;
         }
-
     });
 
     enemies.forEach((enemy,index)=>{
+
+        if(enemy.style.display==="none") return;
 
         let pos=parseFloat(enemy.style.left);
 
@@ -397,13 +446,16 @@ function update(){
             if(vy>0 && m.bottom<e.top+20){
 
                 enemy.style.display="none";
+
                 vy=-10;
+
                 score+=20;
                 scoreText.textContent=score;
 
             }else{
 
                 gameOver=true;
+
                 loseMelody();
 
                 message.style.display="block";
