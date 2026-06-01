@@ -3,24 +3,36 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mario Game - Moving Platforms</title>
+<title>Side Scrolling Mario Game</title>
 
 <style>
 body{
     margin:0;
-    background:#87CEEB;
     overflow:hidden;
+    background:#87CEEB;
     font-family:Arial,sans-serif;
 }
 
 #game{
-    position:relative;
-    width:1200px;
-    height:600px;
-    margin:20px auto;
-    background:linear-gradient(#87CEEB 75%, #6dbb4f 75%);
-    border:5px solid black;
+    width:100vw;
+    height:100vh;
     overflow:hidden;
+    position:relative;
+}
+
+#world{
+    position:absolute;
+    width:3200px;
+    height:100vh;
+}
+
+#ground{
+    position:absolute;
+    left:0;
+    bottom:0;
+    width:3200px;
+    height:80px;
+    background:#45a049;
 }
 
 #mario{
@@ -29,7 +41,7 @@ body{
     height:50px;
     background:red;
     border-radius:8px;
-    z-index:10;
+    z-index:100;
 }
 
 .platform{
@@ -40,7 +52,14 @@ body{
 .movingPlatform{
     position:absolute;
     background:#A0522D;
-    border:3px solid #5C3317;
+    border:2px solid #5C3317;
+}
+
+.enemy{
+    position:absolute;
+    width:40px;
+    height:40px;
+    background:purple;
 }
 
 .coin{
@@ -52,133 +71,122 @@ body{
     border:2px solid orange;
 }
 
-.enemy{
-    position:absolute;
-    width:40px;
-    height:40px;
-    background:purple;
-}
-
-#ground{
-    position:absolute;
-    bottom:0;
-    width:100%;
-    height:60px;
-    background:#4CAF50;
-}
-
 .pit{
     position:absolute;
     bottom:0;
-    height:60px;
+    height:80px;
     background:black;
 }
 
-#flagPole{
+#castle{
     position:absolute;
-    left:1130px;
-    bottom:60px;
-    width:8px;
-    height:220px;
-    background:white;
+    width:120px;
+    height:180px;
+    background:#777;
+    border:4px solid #444;
+    bottom:80px;
+    left:3050px;
 }
 
-#flag{
+#castle:before{
+    content:"";
     position:absolute;
-    width:60px;
-    height:40px;
-    background:pink;
-    left:8px;
-    top:10px;
-    clip-path:polygon(0 0,100% 20%,100% 80%,0 100%);
+    width:40px;
+    height:60px;
+    background:#333;
+    bottom:0;
+    left:40px;
 }
 
 #ui{
-    position:absolute;
+    position:fixed;
     top:10px;
     left:10px;
+    color:white;
     font-size:24px;
     font-weight:bold;
+    text-shadow:2px 2px 4px black;
+    z-index:1000;
 }
 
 #message{
-    position:absolute;
+    position:fixed;
+    top:40%;
     width:100%;
-    top:220px;
     text-align:center;
     color:white;
     font-size:60px;
-    text-shadow:3px 3px 5px black;
+    text-shadow:3px 3px 6px black;
     display:none;
+    z-index:2000;
 }
 </style>
 </head>
-
 <body>
-
-<div id="game">
 
 <div id="ui">
 Score: <span id="score">0</span>
-&nbsp;&nbsp;&nbsp;
-Time: <span id="timer">120</span>
+&nbsp;&nbsp;
+Time: <span id="timer">180</span>
 </div>
 
 <div id="message"></div>
 
-<div id="mario"></div>
+<div id="game">
+<div id="world">
 
 <div id="ground"></div>
+<div id="mario"></div>
 
 <!-- Pits -->
-<div class="pit" style="left:250px;width:120px;"></div>
-<div class="pit" style="left:700px;width:120px;"></div>
+<div class="pit" style="left:600px;width:120px;"></div>
+<div class="pit" style="left:1300px;width:150px;"></div>
+<div class="pit" style="left:2200px;width:180px;"></div>
 
-<!-- Fixed Platforms -->
-<div class="platform" style="left:150px;top:430px;width:120px;height:20px;"></div>
-<div class="platform" style="left:600px;top:280px;width:120px;height:20px;"></div>
-<div class="platform" style="left:980px;top:250px;width:120px;height:20px;"></div>
+<!-- Platforms -->
+<div class="platform" style="left:300px;top:500px;width:150px;height:20px;"></div>
+<div class="platform" style="left:850px;top:420px;width:150px;height:20px;"></div>
+<div class="platform" style="left:1600px;top:360px;width:150px;height:20px;"></div>
+<div class="platform" style="left:2500px;top:300px;width:180px;height:20px;"></div>
 
 <!-- Moving Platforms -->
-<div id="mp1" class="movingPlatform"
-     style="left:350px;top:360px;width:140px;height:20px;"></div>
-
-<div id="mp2" class="movingPlatform"
-     style="left:820px;top:360px;width:140px;height:20px;"></div>
+<div id="mp1" class="movingPlatform" style="left:1050px;top:300px;width:140px;height:20px;"></div>
+<div id="mp2" class="movingPlatform" style="left:1900px;top:260px;width:140px;height:20px;"></div>
 
 <!-- Coins -->
-<div class="coin" style="left:180px;top:390px;"></div>
-<div class="coin" style="left:220px;top:390px;"></div>
-<div class="coin" style="left:430px;top:320px;"></div>
-<div class="coin" style="left:470px;top:320px;"></div>
-<div class="coin" style="left:630px;top:240px;"></div>
-<div class="coin" style="left:670px;top:240px;"></div>
-<div class="coin" style="left:860px;top:320px;"></div>
-<div class="coin" style="left:900px;top:320px;"></div>
-<div class="coin" style="left:1020px;top:210px;"></div>
+<div class="coin" style="left:350px;top:450px;"></div>
+<div class="coin" style="left:400px;top:450px;"></div>
+<div class="coin" style="left:900px;top:370px;"></div>
+<div class="coin" style="left:1100px;top:250px;"></div>
+<div class="coin" style="left:1650px;top:310px;"></div>
+<div class="coin" style="left:1950px;top:210px;"></div>
+<div class="coin" style="left:2550px;top:250px;"></div>
+<div class="coin" style="left:2900px;top:500px;"></div>
 
 <!-- Enemies -->
-<div class="enemy" style="left:300px;top:500px;"></div>
-<div class="enemy" style="left:500px;top:500px;"></div>
-<div class="enemy" style="left:900px;top:500px;"></div>
-<div class="enemy" style="left:1040px;top:210px;"></div>
+<div class="enemy" style="left:500px;top:640px;"></div>
+<div class="enemy" style="left:1200px;top:640px;"></div>
+<div class="enemy" style="left:1800px;top:640px;"></div>
+<div class="enemy" style="left:2700px;top:640px;"></div>
 
-<!-- Goal -->
-<div id="flagPole">
-<div id="flag"></div>
+<div id="castle"></div>
+
+</div>
 </div>
 
+<div id="audioHint" style="position:fixed;bottom:10px;left:10px;color:white;font-size:14px;">
+Press any key to start BGM
 </div>
 
 <script>
 
 const mario=document.getElementById("mario");
-const scoreText=document.getElementById("score");
-const timerText=document.getElementById("timer");
+const world=document.getElementById("world");
 const message=document.getElementById("message");
 
-let x=40;
-let y=500;
+let x=50;
+let y=window.innerHeight-130;
+
 let vx=0;
 let vy=0;
 
@@ -186,73 +194,35 @@ let score=0;
 let gameOver=false;
 let won=false;
 
-const gravity=0.6;
-const speed=5;
-const jumpPower=-13;
+const gravity=0.7;
+const speed=6;
+const jumpPower=-15;
 
 const keys={};
 
 const enemies=[...document.querySelectorAll(".enemy")];
-const fixedPlatforms=[...document.querySelectorAll(".platform")];
+const platforms=[...document.querySelectorAll(".platform")];
 const movingPlatforms=[...document.querySelectorAll(".movingPlatform")];
-const pits=[...document.querySelectorAll(".pit")];
 const coins=[...document.querySelectorAll(".coin")];
+const pits=[...document.querySelectorAll(".pit")];
 
-let enemyDirs=enemies.map(()=>2);
-
-const mp1=document.getElementById("mp1");
-const mp2=document.getElementById("mp2");
+let enemyDir=enemies.map(()=>2);
 
 let mp1Dir=2;
 let mp2Dir=-2;
 
-let audioStarted=false;
-const audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-
-function beep(freq,duration){
-    const osc=audioCtx.createOscillator();
-    const gain=audioCtx.createGain();
-
-    osc.frequency.value=freq;
-    osc.type="square";
-
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-
-    gain.gain.value=0.03;
-
-    osc.start();
-
-    setTimeout(()=>osc.stop(),duration);
-}
-
-function startBGM(){
-
-    if(audioStarted) return;
-    audioStarted=true;
-
-    const melody=[523,659,784,659];
-    let i=0;
-
-    setInterval(()=>{
-
-        if(gameOver||won) return;
-
-        beep(melody[i%melody.length],150);
-        i++;
-
-    },300);
-}
+const scoreText=document.getElementById("score");
+const timerText=document.getElementById("timer");
 
 document.addEventListener("keydown",e=>{
 
-    startBGM();
-
     keys[e.key.toLowerCase()]=true;
 
-    if(e.key==="Enter" && (gameOver||won)){
+    if((gameOver||won) && e.key==="Enter"){
         location.reload();
     }
+
+    startMusic();
 });
 
 document.addEventListener("keyup",e=>{
@@ -268,59 +238,92 @@ function overlap(a,b){
     );
 }
 
+const audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+let musicStarted=false;
+
+function beep(freq,time){
+
+    const osc=audioCtx.createOscillator();
+    const gain=audioCtx.createGain();
+
+    osc.frequency.value=freq;
+    osc.type="square";
+
+    gain.gain.value=0.02;
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start();
+
+    setTimeout(()=>{
+        osc.stop();
+    },time);
+}
+
+function startMusic(){
+
+    if(musicStarted) return;
+
+    musicStarted=true;
+
+    const melody=[523,659,784,659,523,784];
+
+    let i=0;
+
+    setInterval(()=>{
+
+        if(gameOver||won) return;
+
+        beep(melody[i%melody.length],120);
+
+        i++;
+
+    },250);
+}
+
 function winMelody(){
-    [523,659,784,1046].forEach((n,i)=>{
+
+    [523,659,784,1046,1318].forEach((n,i)=>{
         setTimeout(()=>beep(n,250),i*250);
     });
 }
 
 function loseMelody(){
-    [600,500,400,250].forEach((n,i)=>{
-        setTimeout(()=>beep(n,300),i*250);
+
+    [700,600,500,350,200].forEach((n,i)=>{
+        setTimeout(()=>beep(n,250),i*200);
     });
 }
 
-let timeLeft=120;
+let timer=180;
 
 setInterval(()=>{
 
     if(gameOver||won) return;
 
-    timeLeft--;
-    timerText.textContent=timeLeft;
+    timer--;
 
-    if(timeLeft<=0){
+    timerText.textContent=timer;
+
+    if(timer<=0){
 
         gameOver=true;
+
         loseMelody();
 
         message.style.display="block";
         message.innerHTML=
-        "TIME UP!<br><span style='font-size:24px'>Press ENTER</span>";
+        "TIME UP<br><span style='font-size:24px'>Press ENTER</span>";
     }
 
 },1000);
-
-function updateMovingPlatforms(){
-
-    let old1=parseFloat(mp1.style.left);
-    let old2=parseFloat(mp2.style.left);
-
-    old1 += mp1Dir;
-    old2 += mp2Dir;
-
-    if(old1<280 || old1>520) mp1Dir*=-1;
-    if(old2<720 || old2>980) mp2Dir*=-1;
-
-    mp1.style.left=old1+"px";
-    mp2.style.left=old2+"px";
-}
 
 function update(){
 
     if(gameOver||won) return;
 
-    updateMovingPlatforms();
+    let onGround=false;
 
     vx=0;
 
@@ -332,70 +335,72 @@ function update(){
     vy+=gravity;
     y+=vy;
 
-    let onGround=false;
+    const floorY=window.innerHeight-130;
 
-    if(y>=500){
+    if(y>=floorY){
 
-        let overPit=false;
+        let inPit=false;
 
         pits.forEach(pit=>{
 
-            const left=pit.offsetLeft;
+            const left=parseInt(pit.style.left);
             const right=left+pit.offsetWidth;
 
             if(x+20>left && x+20<right){
-                overPit=true;
+                inPit=true;
             }
 
         });
 
-        if(overPit){
+        if(inPit){
 
             gameOver=true;
+
             loseMelody();
 
             message.style.display="block";
             message.innerHTML=
-            "FELL IN PIT!<br><span style='font-size:24px'>Press ENTER</span>";
+            "FELL IN PIT<br><span style='font-size:24px'>Press ENTER</span>";
 
             return;
         }
 
-        y=500;
+        y=floorY;
         vy=0;
         onGround=true;
     }
+
+    let oldX1=parseFloat(mp1.style.left);
+    let oldX2=parseFloat(mp2.style.left);
+
+    oldX1+=mp1Dir;
+    oldX2+=mp2Dir;
+
+    if(oldX1<1000 || oldX1>1300) mp1Dir*=-1;
+    if(oldX2<1800 || oldX2>2200) mp2Dir*=-1;
+
+    mp1.style.left=oldX1+"px";
+    mp2.style.left=oldX2+"px";
 
     mario.style.left=x+"px";
     mario.style.top=y+"px";
 
     const marioRect=mario.getBoundingClientRect();
 
-    [...fixedPlatforms,...movingPlatforms].forEach(platform=>{
+    [...platforms,...movingPlatforms].forEach(platform=>{
 
         const pRect=platform.getBoundingClientRect();
 
         if(overlap(marioRect,pRect) && vy>0){
 
-            const previousBottom=(y-vy)+50;
+            y=platform.offsetTop-50;
 
-            if(previousBottom <= platform.offsetTop+10){
+            vy=0;
 
-                y=platform.offsetTop-50;
-                vy=0;
-                onGround=true;
+            onGround=true;
 
-                if(platform.classList.contains("movingPlatform")){
-
-                    if(platform.id==="mp1"){
-                        x+=mp1Dir;
-                    }
-
-                    if(platform.id==="mp2"){
-                        x+=mp2Dir;
-                    }
-                }
-            }
+            if(platform.id==="mp1") x+=mp1Dir;
+            if(platform.id==="mp2") x+=mp2Dir;
         }
 
     });
@@ -415,8 +420,11 @@ function update(){
             mario.getBoundingClientRect(),
             coin.getBoundingClientRect()
         )){
+
             coin.style.display="none";
+
             score+=10;
+
             scoreText.textContent=score;
         }
     });
@@ -425,15 +433,15 @@ function update(){
 
         if(enemy.style.display==="none") return;
 
-        let pos=parseFloat(enemy.style.left);
+        let ex=parseFloat(enemy.style.left);
 
-        pos+=enemyDirs[index];
+        ex+=enemyDir[index];
 
-        if(pos<50 || pos>1100){
-            enemyDirs[index]*=-1;
+        if(ex<100 || ex>3000){
+            enemyDir[index]*=-1;
         }
 
-        enemy.style.left=pos+"px";
+        enemy.style.left=ex+"px";
 
         if(overlap(
             mario.getBoundingClientRect(),
@@ -447,10 +455,11 @@ function update(){
 
                 enemy.style.display="none";
 
-                vy=-10;
+                score+=25;
 
-                score+=20;
                 scoreText.textContent=score;
+
+                vy=-10;
 
             }else{
 
@@ -459,6 +468,7 @@ function update(){
                 loseMelody();
 
                 message.style.display="block";
+
                 message.innerHTML=
                 "GAME OVER<br><span style='font-size:24px'>Press ENTER</span>";
             }
@@ -466,11 +476,11 @@ function update(){
 
     });
 
-    const pole=document.getElementById("flagPole");
+    const castle=document.getElementById("castle");
 
     if(overlap(
         mario.getBoundingClientRect(),
-        pole.getBoundingClientRect()
+        castle.getBoundingClientRect()
     )){
 
         won=true;
@@ -478,10 +488,19 @@ function update(){
         winMelody();
 
         message.style.display="block";
+
         message.innerHTML=
         "YOU WIN!<br>Score: "+score+
         "<br><span style='font-size:24px'>Press ENTER</span>";
     }
+
+    let cameraX=x-window.innerWidth/2;
+
+    cameraX=Math.max(0,cameraX);
+    cameraX=Math.min(3200-window.innerWidth,cameraX);
+
+    world.style.transform=
+        `translateX(${-cameraX}px)`;
 
     requestAnimationFrame(update);
 }
